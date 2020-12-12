@@ -27,7 +27,7 @@ public class NotaDAO {
         notas.remove(posicao);
     }
 
-    public void troca(int posicaoInicio, int posicaoFim) {
+    public void trocar(int posicaoInicio, int posicaoFim) {
         Collections.swap(notas, posicaoInicio, posicaoFim);
     }
 

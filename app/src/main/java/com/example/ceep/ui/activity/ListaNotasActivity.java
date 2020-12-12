@@ -7,14 +7,17 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ceep.R;
 import com.example.ceep.dao.NotaDAO;
 import com.example.ceep.model.Nota;
 import com.example.ceep.ui.recyclerview.adapter.ListaNotasAdapter;
+import com.example.ceep.ui.recyclerview.helper.callback.NotaItemToucheHelperCallback;
 
 import java.util.List;
 
@@ -27,12 +30,14 @@ import static com.example.ceep.ui.activity.NotaActivityConstantes.POSICAO_INVALI
 public class ListaNotasActivity extends AppCompatActivity {
 
 
+    public static final String TITULO_APPBAR = "Notas";
     private ListaNotasAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lista_notas);
+        setTitle(TITULO_APPBAR);
         List<Nota> todasNotas = retornaTodasAsNotas();
         configurarRecyclerView(todasNotas);
         configuarBotaoInserirNota();
@@ -40,9 +45,6 @@ public class ListaNotasActivity extends AppCompatActivity {
 
     private List<Nota> retornaTodasAsNotas() {
         NotaDAO dao = new NotaDAO();
-        for(int i = 0; i < 10; i++){
-            dao.insere(new Nota("Titulo " + (i + 1), "Descricao " + (i + 1)));
-        }
         return dao.todos();
     }
 
@@ -59,6 +61,12 @@ public class ListaNotasActivity extends AppCompatActivity {
     private void configurarRecyclerView(List<Nota> todasNotas) {
         RecyclerView listaNotas = findViewById(R.id.lista_notas_recyclerview);
         configurarAdapter(todasNotas, listaNotas);
+        configuarItemToucheHelper(listaNotas);
+    }
+
+    private void configuarItemToucheHelper(RecyclerView listaNotas) {
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new NotaItemToucheHelperCallback(adapter));
+        itemTouchHelper.attachToRecyclerView(listaNotas);
     }
 
     private void configurarAdapter(List<Nota> todasNotas, RecyclerView listaNotas) {
@@ -82,7 +90,7 @@ public class ListaNotasActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (ehResultadoInserirNota(requestCode,  data)) {
@@ -114,7 +122,7 @@ public class ListaNotasActivity extends AppCompatActivity {
         return posicaoRecebida > POSICAO_INVALIDA;
     }
 
-    private boolean ehResultadoAlterarNota(int requestCode, @Nullable Intent data) {
+    private boolean ehResultadoAlterarNota(int requestCode, Intent data) {
         return ehCodigoRequisicaoAlterarNota(requestCode) && temNota(data);
     }
 
@@ -127,7 +135,7 @@ public class ListaNotasActivity extends AppCompatActivity {
         adapter.adiciona(notaRecebida);
     }
 
-    private boolean ehResultadoInserirNota(int requestCode,  @Nullable Intent data) {
+    private boolean ehResultadoInserirNota(int requestCode, Intent data) {
         return ehCodigoRequisicaoInsereNota(requestCode)  && temNota(data);
     }
 
@@ -139,8 +147,8 @@ public class ListaNotasActivity extends AppCompatActivity {
         return resultCode == Activity.RESULT_OK;
     }
 
-    private boolean temNota(@Nullable Intent data) {
-        return data.hasExtra(CHAVE_NOTA);
+    private boolean temNota(Intent data) {
+       return data != null && data.hasExtra(CHAVE_NOTA);
     }
 
     @Override
